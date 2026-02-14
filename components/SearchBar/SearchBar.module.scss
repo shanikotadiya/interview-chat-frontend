@@ -1,6 +1,13 @@
 .wrapper {
   position: relative;
   width: 100%;
+  min-height: 44px;
+  margin-bottom: 1rem;
+  /* Temporary debug styling - remove when done */
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 0.25rem;
+  background: var(--color-bg-elevated);
 }
 
 .input {

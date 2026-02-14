@@ -1,3 +1,4 @@
+import SearchBar from "../components/SearchBar/SearchBar.jsx";
 import ConversationList from "../components/ConversationList/ConversationList.jsx";
 
 const DEFAULT_PAGE = 1;
@@ -30,7 +31,11 @@ export default async function Home() {
     <div className="page">
       <main className="main">
         <h1 className="title">Conversations</h1>
-        <ConversationList initialData={initialData} />
+        <SearchBar />
+        <ConversationList
+          initialConversations={initialData.data}
+          initialTotal={initialData.total}
+        />
       </main>
     </div>
   );

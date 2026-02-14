@@ -24,7 +24,12 @@ export default function SocketProvider({ children }) {
     const socket = io(url, { autoConnect: true });
     socketInstance = socket;
 
+    socket.on("connect", () => {
+      console.log("[Socket] connected", socket.id);
+    });
+
     const handleNewMessage = (message) => {
+      console.log("[Socket] new_message received", message);
       if (!message || (!message.id && !message.conversationId)) return;
       const state = store.getState();
       const selectedId = state.chat.selectedConversation?.id ?? state.chat.selectedConversation?.conversationId;
@@ -34,6 +39,7 @@ export default function SocketProvider({ children }) {
     };
 
     const handleUserTyping = (payload) => {
+      console.log("[Socket] user_typing received", payload);
       const userId = payload?.userId;
       if (userId != null) store.dispatch(addTypingUser(String(userId)));
     };
@@ -48,6 +54,7 @@ export default function SocketProvider({ children }) {
     socket.on("typing_stop", handleTypingStop);
 
     return () => {
+      socket.off("connect");
       socket.off("new_message", handleNewMessage);
       socket.off("user_typing", handleUserTyping);
       socket.off("typing_stop", handleTypingStop);

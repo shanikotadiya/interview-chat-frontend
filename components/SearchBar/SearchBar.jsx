@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { setSearchQuery, setSearchResults } from "../../store/chatSlice.js";
+import { setSearchQuery, setConversations, restoreConversations } from "../../store/chatSlice.js";
 import { searchConversations } from "../../services/api.js";
 import styles from "./SearchBar.module.scss";
 
@@ -25,7 +25,7 @@ function SearchBarInner() {
 
     if (trimmed === "") {
       dispatch(setSearchQuery(""));
-      dispatch(setSearchResults([]));
+      dispatch(restoreConversations());
       setLoading(false);
       return;
     }
@@ -40,12 +40,12 @@ function SearchBarInner() {
         .then((res) => {
           if (searchIdRef.current !== currentSearchId) return;
           dispatch(setSearchQuery(trimmed));
-          dispatch(setSearchResults(res.data ?? []));
+          dispatch(setConversations(res.data ?? []));
         })
         .catch(() => {
           if (searchIdRef.current !== currentSearchId) return;
           dispatch(setSearchQuery(trimmed));
-          dispatch(setSearchResults([]));
+          dispatch(setConversations([]));
         })
         .finally(() => {
           if (searchIdRef.current === currentSearchId) setLoading(false);

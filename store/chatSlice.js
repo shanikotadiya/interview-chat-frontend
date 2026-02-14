@@ -4,6 +4,7 @@ const initialState = {
   selectedConversation: null,
   typingUsers: [],
   conversations: [],
+  initialConversations: [],
   messages: [],
   searchQuery: "",
   searchResults: [],
@@ -28,7 +29,13 @@ const chatSlice = createSlice({
       state.typingUsers = state.typingUsers.filter((id) => id !== action.payload);
     },
     setConversations(state, action) {
-      state.conversations = action.payload;
+      state.conversations = action.payload ?? [];
+    },
+    setInitialConversations(state, action) {
+      state.initialConversations = action.payload ?? [];
+    },
+    restoreConversations(state) {
+      state.conversations = state.initialConversations.length ? [...state.initialConversations] : [];
     },
     addConversation(state, action) {
       state.conversations.push(action.payload);
@@ -60,6 +67,8 @@ export const {
   addTypingUser,
   removeTypingUser,
   setConversations,
+  setInitialConversations,
+  restoreConversations,
   addConversation,
   appendConversations,
   setMessages,

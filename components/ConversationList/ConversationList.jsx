@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useRef, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setConversations, setSelectedConversation, appendConversations } from "../../store/chatSlice.js";
+import { setConversations, setInitialConversations, setSelectedConversation, appendConversations } from "../../store/chatSlice.js";
 import { fetchConversations } from "../../services/api.js";
 import styles from "./ConversationList.module.scss";
 
@@ -82,11 +82,10 @@ function ConversationItem({ conversation, isSelected, onSelect }) {
 
 const MemoizedConversationItem = memo(ConversationItem);
 
-function ConversationListInner({ initialData }) {
+function ConversationListInner({ initialConversations = [], initialTotal }) {
   const dispatch = useDispatch();
   const conversations = useSelector((state) => state.chat.conversations);
   const searchQuery = useSelector((state) => state.chat.searchQuery);
-  const searchResults = useSelector((state) => state.chat.searchResults);
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const hasHydrated = useRef(false);
   const sentinelRef = useRef(null);
@@ -97,17 +96,16 @@ function ConversationListInner({ initialData }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (hasHydrated.current || !initialData?.data) return;
+    if (hasHydrated.current) return;
+    const list = Array.isArray(initialConversations) ? initialConversations : [];
     hasHydrated.current = true;
-    dispatch(setConversations(Array.isArray(initialData.data) ? initialData.data : []));
-    const total = initialData.total ?? 0;
-    const count = (initialData.data ?? []).length;
-    setHasMore(count < total);
+    dispatch(setConversations(list));
+    dispatch(setInitialConversations(list));
+    if (initialTotal != null) setHasMore(list.length < initialTotal);
     setNextPage(2);
-  }, [dispatch, initialData]);
+  }, [dispatch, initialConversations, initialTotal]);
 
-  const baseList = conversations.length > 0 ? conversations : (initialData?.data ?? []);
-  const list = searchQuery.trim() !== "" ? searchResults : baseList;
+  const list = conversations.length > 0 ? conversations : (initialConversations ?? []);
   const isShowingMainList = searchQuery.trim() === "";
 
   const loadMore = useCallback(() => {
