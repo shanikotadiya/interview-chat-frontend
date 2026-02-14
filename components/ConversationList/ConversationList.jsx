@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useCallback, useState } from "react";
+import { memo, useEffect, useRef, useCallback, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setConversations, setInitialConversations, setSelectedConversation, appendConversations } from "../../store/chatSlice.js";
 import { fetchConversations } from "../../services/api.js";
@@ -86,6 +86,7 @@ function ConversationListInner({ initialConversations = [], initialTotal }) {
   const dispatch = useDispatch();
   const conversations = useSelector((state) => state.chat.conversations);
   const searchQuery = useSelector((state) => state.chat.searchQuery);
+  const selectedPlatform = useSelector((state) => state.chat.selectedPlatform);
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const hasHydrated = useRef(false);
   const sentinelRef = useRef(null);
@@ -106,6 +107,13 @@ function ConversationListInner({ initialConversations = [], initialTotal }) {
   }, [dispatch, initialConversations, initialTotal]);
 
   const list = conversations.length > 0 ? conversations : (initialConversations ?? []);
+
+  const filteredList = useMemo(() => {
+    if (selectedPlatform === "all") return list;
+    const p = String(selectedPlatform).toLowerCase();
+    return list.filter((c) => (c.platform ?? "").toLowerCase() === p);
+  }, [list, selectedPlatform]);
+
   const isShowingMainList = searchQuery.trim() === "";
 
   const loadMore = useCallback(() => {
@@ -153,12 +161,16 @@ function ConversationListInner({ initialConversations = [], initialTotal }) {
   return (
     <>
       <ul className={styles.list} aria-label="Conversation list">
-        {list.length === 0 ? (
+        {filteredList.length === 0 ? (
           <li className={styles.empty}>
-            {searchQuery.trim() !== "" ? "No matching conversations." : "No conversations yet."}
+            {searchQuery.trim() !== ""
+              ? "No matching conversations."
+              : selectedPlatform !== "all"
+                ? "No conversations for this platform."
+                : "No conversations yet."}
           </li>
         ) : (
-          list.map((conv) => (
+          filteredList.map((conv) => (
             <MemoizedConversationItem
               key={getConversationId(conv) ?? JSON.stringify(conv)}
               conversation={conv}

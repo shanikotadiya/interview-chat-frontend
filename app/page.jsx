@@ -1,3 +1,4 @@
+import PlatformSidebar from "../components/PlatformSidebar/PlatformSidebar.jsx";
 import SearchBar from "../components/SearchBar/SearchBar.jsx";
 import ConversationList from "../components/ConversationList/ConversationList.jsx";
 import MessageList from "../components/MessageList/MessageList.jsx";
@@ -30,6 +31,7 @@ export default async function Home() {
 
   return (
     <div className="dashboard">
+      <PlatformSidebar />
       <aside className="dashboardSidebar">
         <div className="dashboardSidebarHeader">
           <h1 className="dashboardTitle">Conversations</h1>

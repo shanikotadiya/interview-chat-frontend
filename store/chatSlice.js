@@ -1,6 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  platform: "all",
+  selectedPlatform: "all",
   selectedConversation: null,
   typingUsers: [],
   conversations: [],
@@ -14,6 +16,11 @@ const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
+    setPlatform(state, action) {
+      const value = action.payload ?? "all";
+      state.platform = value;
+      state.selectedPlatform = value;
+    },
     setSelectedConversation(state, action) {
       state.selectedConversation = action.payload;
     },
@@ -83,6 +90,7 @@ const chatSlice = createSlice({
 });
 
 export const {
+  setPlatform,
   setSelectedConversation,
   setTypingUsers,
   addTypingUser,
