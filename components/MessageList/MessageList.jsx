@@ -46,8 +46,9 @@ function MessageItem({ message, isOwn, showSender, isNew }) {
       )}
       {isTyping ? (
         <span className={styles.bubble}>
-          <span className={styles.typingText}>Typing</span>
-          <span className={styles.typingDots}>...</span>
+          <span className={styles.typingDot} aria-hidden />
+          <span className={styles.typingDot} aria-hidden />
+          <span className={styles.typingDot} aria-hidden />
         </span>
       ) : (
         <>

@@ -58,8 +58,10 @@ const chatSlice = createSlice({
     },
     addMessage(state, action) {
       const msg = action.payload;
-      if (msg.id !== "typing") {
-        state.messages = state.messages.filter((m) => m.id !== "typing" && !String(m.id).startsWith("temp-"));
+      if (msg.id !== "typing" && msg.id !== "typing-temp") {
+        state.messages = state.messages.filter(
+          (m) => m.id !== "typing" && m.id !== "typing-temp" && !String(m.id).startsWith("temp-")
+        );
       }
       state.messages.push(msg);
     },
@@ -67,8 +69,9 @@ const chatSlice = createSlice({
       const { conversationId, body } = action.payload ?? {};
       if (!conversationId || body == null) return;
       const typingMessage = {
-        id: "typing",
-        body: "Typing...",
+        id: "typing-temp",
+        text: "",
+        body: "",
         isTyping: true,
         conversationId,
         createdAt: new Date().toISOString(),

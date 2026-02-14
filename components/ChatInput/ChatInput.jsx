@@ -2,8 +2,9 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { sendMessage } from "../../store/chatSlice.js";
+import { sendMessage, addMessage } from "../../store/chatSlice.js";
 import { useSocket } from "../../store/SocketProvider.jsx";
+import { sendMessageApi } from "../../services/api.js";
 import styles from "./ChatInput.module.scss";
 
 const TYPING_STOP_DELAY_MS = 2000;
@@ -45,16 +46,30 @@ export default function ChatInput() {
     e.preventDefault();
     const text = value.trim();
     if (!text || !conversationId) return;
+
     dispatch(sendMessage({ conversationId, body: text }));
-    if (socket?.connected) {
-      socket.emit("send_message", { conversationId, body: text });
-      socket.emit("typing_stop", { conversationId });
-    }
     setValue("");
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
+    if (socket?.connected) socket.emit("typing_stop", { conversationId });
+
+    sendMessageApi("slack", conversationId, text)
+      .then((res) => {
+        const message = res.data ?? res.message ?? res;
+        const normalized = {
+          id: message.id ?? message.ts,
+          body: message.body ?? message.text ?? text,
+          conversationId: message.conversationId ?? conversationId,
+          createdAt: message.createdAt ?? new Date().toISOString(),
+          isOwn: true,
+        };
+        dispatch(addMessage(normalized));
+      })
+      .catch(() => {
+        // Typing placeholder remains; could show toast later
+      });
   };
 
   const disabled = !conversationId;
