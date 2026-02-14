@@ -8,6 +8,7 @@ const initialState = {
   conversations: [],
   initialConversations: [],
   messages: [],
+  messagesLoading: false,
   searchQuery: "",
   searchResults: [],
 };
@@ -52,6 +53,9 @@ const chatSlice = createSlice({
     },
     setMessages(state, action) {
       state.messages = action.payload;
+    },
+    setMessagesLoading(state, action) {
+      state.messagesLoading = Boolean(action.payload);
     },
     prependMessages(state, action) {
       state.messages = (action.payload ?? []).concat(state.messages);
@@ -121,6 +125,7 @@ export const {
   addConversation,
   appendConversations,
   setMessages,
+  setMessagesLoading,
   prependMessages,
   addMessage,
   sendMessage,

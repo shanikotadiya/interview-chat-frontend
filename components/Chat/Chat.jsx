@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "../../store/SocketProvider.jsx";
-import { addMessage, setMessages } from "../../store/chatSlice.js";
+import { addMessage, setMessages, setMessagesLoading } from "../../store/chatSlice.js";
 import { sendMessageApi, fetchMessages as fetchMessagesApi } from "../../services/api.js";
 import ChatHeader from "../ChatHeader/ChatHeader.jsx";
 import MessageList from "../MessageList/MessageList.jsx";
@@ -17,25 +17,33 @@ export default function Chat() {
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const activeChannelId = selectedConversation?.id ?? selectedConversation?.conversationId ?? null;
 
-  const fetchMessages = useCallback(() => {
-    if (!activeChannelId) return;
-    fetchMessagesApi(activeChannelId, 1, 100)
-      .then((res) => {
-        const list = res.data ?? res.messages ?? [];
-        const sorted = Array.isArray(list)
-          ? [...list].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
-          : [];
-        dispatch(setMessages(sorted));
-      })
-      .catch(() => {});
-  }, [activeChannelId, dispatch]);
+  const fetchMessages = useCallback(
+    (showLoading = false) => {
+      if (!activeChannelId) return;
+      if (showLoading) {
+        dispatch(setMessages([]));
+        dispatch(setMessagesLoading(true));
+      }
+      fetchMessagesApi(activeChannelId, 1, 100)
+        .then((res) => {
+          const list = res.data ?? res.messages ?? [];
+          const sorted = Array.isArray(list)
+            ? [...list].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+            : [];
+          dispatch(setMessages(sorted));
+          if (showLoading) dispatch(setMessagesLoading(false));
+        })
+        .catch(() => {
+          if (showLoading) dispatch(setMessagesLoading(false));
+        });
+    },
+    [activeChannelId, dispatch]
+  );
 
   useEffect(() => {
     if (!activeChannelId) return;
-    fetchMessages();
-    const interval = setInterval(() => {
-      fetchMessages();
-    }, 5000);
+    fetchMessages(true);
+    const interval = setInterval(() => fetchMessages(false), 5000);
     return () => clearInterval(interval);
   }, [activeChannelId, fetchMessages]);
 

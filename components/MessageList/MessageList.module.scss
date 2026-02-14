@@ -248,6 +248,46 @@
   font-size: 0.9375rem;
 }
 
+.loadingCenter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loadingDotRing {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.loadingDot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  top: 50%;
+  left: 50%;
+  margin-left: -4px;
+  margin-top: -4px;
+  transform-origin: 24px 24px;
+  transform: rotate(calc(var(--i) * 45deg)) translate(20px, 0);
+  animation: loadingDotPulse 1s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.12s);
+}
+
+@keyframes loadingDotPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 480px) {
   .item {
     max-width: 92%;

@@ -88,6 +88,7 @@ function MessageListInner() {
   const dispatch = useDispatch();
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const messages = useSelector((state) => state.chat.messages);
+  const messagesLoading = useSelector((state) => state.chat.messagesLoading);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -214,6 +215,20 @@ function MessageListInner() {
     return (
       <div className={styles.container}>
         <div className={styles.emptySelect}>Select a conversation</div>
+      </div>
+    );
+  }
+
+  if (messagesLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingCenter}>
+          <div className={styles.loadingDotRing} aria-label="Loading">
+            {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+              <span key={i} className={styles.loadingDot} style={{ "--i": i }} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
