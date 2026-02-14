@@ -93,6 +93,7 @@ function MessageListInner() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
+  const bottomRef = useRef(null);
   const conversationIdRef = useRef(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
@@ -201,15 +202,15 @@ function MessageListInner() {
     if (!conversationId) initialLoadDoneRef.current = false;
   }, [conversationId]);
 
-  // Scroll to bottom when a new message arrives at the end.
   useEffect(() => {
-    if (!lastMessage || !scrollRef.current) return;
-    if (lastMessage.id !== prevLastIdRef.current) {
+    const run = () => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       const el = scrollRef.current;
-      el.scrollTop = el.scrollHeight;
-      prevLastIdRef.current = lastMessage.id;
-    }
-  }, [lastMessage?.id, list.length]);
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    };
+    const id = requestAnimationFrame(() => requestAnimationFrame(run));
+    return () => cancelAnimationFrame(id);
+  }, [list.length, conversationId, messagesLoading]);
 
   if (!conversationId) {
     return (
@@ -275,6 +276,7 @@ function MessageListInner() {
               )}
             </ul>
             <TypingIndicator />
+            <div ref={bottomRef} />
           </>
         )}
       </div>
