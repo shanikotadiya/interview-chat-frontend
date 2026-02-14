@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages, prependMessages } from "../../store/chatSlice.js";
 import { fetchMessages } from "../../services/api.js";
+import TypingIndicator from "../TypingIndicator/TypingIndicator.jsx";
 import styles from "./MessageList.module.scss";
 
 const MESSAGES_PER_PAGE = 20;
@@ -127,15 +128,18 @@ function MessageListInner() {
         {list.length === 0 && !loading ? (
           <div className={styles.empty}>No messages yet.</div>
         ) : (
-          <ul className={styles.list}>
-            {list.map((msg, index) => (
-              <MemoizedMessageItem
-                key={msg.id ?? `msg-${index}`}
-                message={msg}
-                isOwn={Boolean(msg.isOwn ?? (index % 2 === 1))}
-              />
-            ))}
-          </ul>
+          <>
+            <ul className={styles.list}>
+              {list.map((msg, index) => (
+                <MemoizedMessageItem
+                  key={msg.id ?? `msg-${index}`}
+                  message={msg}
+                  isOwn={Boolean(msg.isOwn ?? (index % 2 === 1))}
+                />
+              ))}
+            </ul>
+            <TypingIndicator />
+          </>
         )}
       </div>
     </div>
