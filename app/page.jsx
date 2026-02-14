@@ -1,10 +1,7 @@
 import PlatformSidebar from "../components/PlatformSidebar/PlatformSidebar.jsx";
 import SearchBar from "../components/SearchBar/SearchBar.jsx";
 import ConversationList from "../components/ConversationList/ConversationList.jsx";
-import ChatHeader from "../components/ChatHeader/ChatHeader.jsx";
-import MessageList from "../components/MessageList/MessageList.jsx";
-import ChatFooter from "../components/ChatFooter/ChatFooter.jsx";
-import ChatInput from "../components/ChatInput/ChatInput.jsx";
+import Chat from "../components/Chat/Chat.jsx";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 50;
@@ -48,12 +45,7 @@ export default async function Home() {
         </div>
       </aside>
       <main className="dashboardMain">
-        <ChatHeader />
-        <div className="dashboardMainContent">
-          <MessageList />
-        </div>
-        <ChatFooter />
-        <ChatInput />
+        <Chat />
       </main>
     </div>
   );

@@ -9,6 +9,12 @@ import styles from "./MessageList.module.scss";
 
 const MESSAGES_PER_PAGE = 20;
 
+/** Sort messages oldest-first so newest appears at bottom. */
+function sortMessagesByCreatedAt(messages) {
+  if (!Array.isArray(messages)) return [];
+  return [...messages].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+}
+
 function formatMessageTime(createdAt) {
   if (!createdAt) return "";
   const date = new Date(createdAt);
@@ -128,9 +134,10 @@ function MessageListInner() {
     fetchMessages(conversationId, 1, MESSAGES_PER_PAGE)
       .then((res) => {
         if (!cancelled) {
-          dispatch(setMessages(res.data ?? []));
+          const data = res.data ?? [];
+          dispatch(setMessages(sortMessagesByCreatedAt(data)));
           const total = res.total ?? 0;
-          setHasMore((res.data?.length ?? 0) < total);
+          setHasMore(data.length < total);
         }
       })
       .catch(() => {
@@ -152,7 +159,7 @@ function MessageListInner() {
       .then((res) => {
         const data = res.data ?? [];
         if (data.length > 0) {
-          dispatch(prependMessages(data));
+          dispatch(prependMessages(sortMessagesByCreatedAt(data)));
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               if (scrollRef.current) {
@@ -241,7 +248,7 @@ function MessageListInner() {
                   const isNew = !msg.isTyping && isLastMessageNew && msg.id === lastMessage?.id;
                   return (
                     <MemoizedMessageItem
-                      key={msg.id ?? `msg-${gIdx}-${mIdx}`}
+                      key={`${msg.id ?? "msg"}-${gIdx}-${mIdx}`}
                       message={msg}
                       isOwn={group.isOwn}
                       showSender={isFirstInGroup}

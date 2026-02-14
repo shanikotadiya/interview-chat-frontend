@@ -1,75 +1,25 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { sendMessage, addMessage } from "../../store/chatSlice.js";
-import { useSocket } from "../../store/SocketProvider.jsx";
-import { sendMessageApi } from "../../services/api.js";
+import { useState } from "react";
 import styles from "./ChatInput.module.scss";
 
-const TYPING_STOP_DELAY_MS = 2000;
-
-export default function ChatInput() {
-  const dispatch = useDispatch();
-  const socket = useSocket();
-  const selectedConversation = useSelector((state) => state.chat.selectedConversation);
+export default function ChatInput({ conversationId, onSend, isSending }) {
   const [value, setValue] = useState("");
-  const typingTimeoutRef = useRef(null);
-
-  const conversationId =
-    selectedConversation?.id ?? selectedConversation?.conversationId ?? null;
-
-  const emitTypingStart = useCallback(() => {
-    if (!socket?.connected || !conversationId) return;
-    socket.emit("typing_start", { conversationId });
-  }, [socket, conversationId]);
-
-  const scheduleTypingStop = useCallback(() => {
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      if (socket?.connected && conversationId) {
-        socket.emit("typing_stop", { conversationId });
-      }
-      typingTimeoutRef.current = null;
-    }, TYPING_STOP_DELAY_MS);
-  }, [socket, conversationId]);
 
   const handleChange = (e) => {
-    const next = e.target.value;
-    setValue(next);
-    if (!conversationId) return;
-    emitTypingStart();
-    scheduleTypingStop();
+    setValue(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const text = value.trim();
     if (!text || !conversationId) return;
-
-    dispatch(sendMessage({ conversationId, body: text }));
-    setValue("");
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
+    const promise = onSend(conversationId, text);
+    if (promise && typeof promise.then === "function") {
+      promise.then(() => setValue(""));
+    } else {
+      setValue("");
     }
-    if (socket?.connected) socket.emit("typing_stop", { conversationId });
-
-    sendMessageApi("slack", conversationId, text)
-      .then((res) => {
-        const message = res.data ?? res.message ?? res;
-        const normalized = {
-          id: message.id ?? message.ts,
-          body: message.body ?? message.text ?? text,
-          conversationId: message.conversationId ?? conversationId,
-          createdAt: message.createdAt ?? new Date().toISOString(),
-          isOwn: true,
-        };
-        dispatch(addMessage(normalized));
-      })
-      .catch(() => {
-        // Typing placeholder remains; could show toast later
-      });
   };
 
   const disabled = !conversationId;
@@ -90,7 +40,7 @@ export default function ChatInput() {
         <button
           type="submit"
           className={styles.sendButton}
-          disabled={disabled || !value.trim()}
+          disabled={disabled || !value.trim() || isSending}
           aria-label="Send message"
         >
           <svg

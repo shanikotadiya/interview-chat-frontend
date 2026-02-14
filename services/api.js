@@ -119,6 +119,16 @@ export async function fetchMessages(conversationId, page = 1, limit = 10) {
 }
 
 /**
+ * Fetch Slack channel messages via GET /api/messages?platform=slack&channelId=...
+ * @param {string} channelId - Slack channel id (e.g. conversationId or raw channel id)
+ * @returns {Promise<{ data: any[] }>}
+ */
+export async function fetchSlackChannelMessages(channelId) {
+  if (!channelId) throw new Error("channelId is required");
+  return request("/api/messages", { platform: "slack", channelId });
+}
+
+/**
  * Search conversations by query with pagination.
  * @param {string} query
  * @param {number} [page=1]
