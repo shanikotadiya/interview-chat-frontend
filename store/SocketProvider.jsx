@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useStore } from "react-redux";
 import { io } from "socket.io-client";
 import { addMessage, conversationNewMessage, addTypingUser, removeTypingUser } from "./chatSlice.js";
@@ -11,21 +11,32 @@ function getSocketUrl() {
   return base.replace(/\/$/, "");
 }
 
+const SocketContext = createContext(null);
+
+export function useSocket() {
+  return useContext(SocketContext);
+}
+
 let socketInstance = null;
 
 export default function SocketProvider({ children }) {
   const store = useStore();
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const url = getSocketUrl();
     if (!url) return;
 
-    if (socketInstance) return;
-    const socket = io(url, { autoConnect: true });
-    socketInstance = socket;
+    if (socketInstance) {
+      setSocket(socketInstance);
+      return;
+    }
+    const socketObj = io(url, { autoConnect: true });
+    socketInstance = socketObj;
+    setSocket(socketObj);
 
-    socket.on("connect", () => {
-      console.log("[Socket] connected", socket.id);
+    socketObj.on("connect", () => {
+      console.log("[Socket] connected", socketObj.id);
     });
 
     const handleNewMessage = (message) => {
@@ -50,19 +61,24 @@ export default function SocketProvider({ children }) {
       if (userId != null) store.dispatch(removeTypingUser(String(userId)));
     };
 
-    socket.on("new_message", handleNewMessage);
-    socket.on("user_typing", handleUserTyping);
-    socket.on("typing_stop", handleTypingStop);
+    socketObj.on("new_message", handleNewMessage);
+    socketObj.on("user_typing", handleUserTyping);
+    socketObj.on("typing_stop", handleTypingStop);
 
     return () => {
-      socket.off("connect");
-      socket.off("new_message", handleNewMessage);
-      socket.off("user_typing", handleUserTyping);
-      socket.off("typing_stop", handleTypingStop);
-      socket.disconnect();
+      socketObj.off("connect");
+      socketObj.off("new_message", handleNewMessage);
+      socketObj.off("user_typing", handleUserTyping);
+      socketObj.off("typing_stop", handleTypingStop);
+      socketObj.disconnect();
       socketInstance = null;
+      setSocket(null);
     };
   }, [store]);
 
-  return children;
+  return (
+    <SocketContext.Provider value={socket}>
+      {children}
+    </SocketContext.Provider>
+  );
 }
