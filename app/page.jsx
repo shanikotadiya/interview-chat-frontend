@@ -1,6 +1,7 @@
 import PlatformSidebar from "../components/PlatformSidebar/PlatformSidebar.jsx";
 import SearchBar from "../components/SearchBar/SearchBar.jsx";
 import ConversationList from "../components/ConversationList/ConversationList.jsx";
+import ChatHeader from "../components/ChatHeader/ChatHeader.jsx";
 import MessageList from "../components/MessageList/MessageList.jsx";
 
 const DEFAULT_PAGE = 1;
@@ -45,7 +46,10 @@ export default async function Home() {
         </div>
       </aside>
       <main className="dashboardMain">
-        <MessageList />
+        <ChatHeader />
+        <div className="dashboardMainContent">
+          <MessageList />
+        </div>
       </main>
     </div>
   );
