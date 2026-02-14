@@ -34,6 +34,9 @@ const chatSlice = createSlice({
     setMessages(state, action) {
       state.messages = action.payload;
     },
+    prependMessages(state, action) {
+      state.messages = (action.payload ?? []).concat(state.messages);
+    },
     addMessage(state, action) {
       state.messages.push(action.payload);
     },
@@ -48,6 +51,7 @@ export const {
   setConversations,
   addConversation,
   setMessages,
+  prependMessages,
   addMessage,
 } = chatSlice.actions;
 
