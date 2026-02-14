@@ -126,7 +126,10 @@ function MessageListInner() {
       )}
       <div className={styles.scrollArea} ref={scrollRef}>
         {list.length === 0 && !loading ? (
-          <div className={styles.empty}>No messages yet.</div>
+          <>
+            <div className={styles.empty}>No messages yet.</div>
+            <TypingIndicator />
+          </>
         ) : (
           <>
             <ul className={styles.list}>

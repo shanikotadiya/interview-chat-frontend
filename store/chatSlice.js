@@ -52,6 +52,27 @@ const chatSlice = createSlice({
     addMessage(state, action) {
       state.messages.push(action.payload);
     },
+    conversationNewMessage(state, action) {
+      const message = action.payload;
+      if (!message || message.conversationId == null) return;
+      const cid = String(message.conversationId);
+      const list = state.conversations;
+      const idx = list.findIndex(
+        (c) => (c.id ?? c.conversationId) === cid
+      );
+      if (idx === -1) return;
+      const conv = list[idx];
+      const updated = {
+        ...conv,
+        lastMessage: message.body ?? conv.lastMessage ?? "",
+        updatedAt: message.createdAt ?? conv.updatedAt,
+      };
+      state.conversations = [
+        updated,
+        ...list.slice(0, idx),
+        ...list.slice(idx + 1),
+      ];
+    },
     setSearchQuery(state, action) {
       state.searchQuery = action.payload ?? "";
     },
@@ -74,6 +95,7 @@ export const {
   setMessages,
   prependMessages,
   addMessage,
+  conversationNewMessage,
   setSearchQuery,
   setSearchResults,
 } = chatSlice.actions;

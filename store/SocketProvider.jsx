@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useStore } from "react-redux";
 import { io } from "socket.io-client";
-import { addMessage, addTypingUser, removeTypingUser } from "./chatSlice.js";
+import { addMessage, conversationNewMessage, addTypingUser, removeTypingUser } from "./chatSlice.js";
 
 function getSocketUrl() {
   const base = process.env.NEXT_PUBLIC_BACKEND_URL || "";
@@ -31,6 +31,7 @@ export default function SocketProvider({ children }) {
     const handleNewMessage = (message) => {
       console.log("[Socket] new_message received", message);
       if (!message || (!message.id && !message.conversationId)) return;
+      store.dispatch(conversationNewMessage(message));
       const state = store.getState();
       const selectedId = state.chat.selectedConversation?.id ?? state.chat.selectedConversation?.conversationId;
       if (selectedId && message.conversationId === selectedId) {

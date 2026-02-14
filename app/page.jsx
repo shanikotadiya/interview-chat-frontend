@@ -1,5 +1,6 @@
 import SearchBar from "../components/SearchBar/SearchBar.jsx";
 import ConversationList from "../components/ConversationList/ConversationList.jsx";
+import MessageList from "../components/MessageList/MessageList.jsx";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 50;
@@ -28,14 +29,21 @@ export default async function Home() {
   const initialData = await fetchConversationsSSR();
 
   return (
-    <div className="page">
-      <main className="main">
-        <h1 className="title">Conversations</h1>
-        <SearchBar />
-        <ConversationList
-          initialConversations={initialData.data}
-          initialTotal={initialData.total}
-        />
+    <div className="dashboard">
+      <aside className="dashboardSidebar">
+        <div className="dashboardSidebarHeader">
+          <h1 className="dashboardTitle">Conversations</h1>
+          <SearchBar />
+        </div>
+        <div className="dashboardSidebarList">
+          <ConversationList
+            initialConversations={initialData.data}
+            initialTotal={initialData.total}
+          />
+        </div>
+      </aside>
+      <main className="dashboardMain">
+        <MessageList />
       </main>
     </div>
   );
