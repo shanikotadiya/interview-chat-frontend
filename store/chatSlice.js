@@ -5,6 +5,8 @@ const initialState = {
   typingUsers: [],
   conversations: [],
   messages: [],
+  searchQuery: "",
+  searchResults: [],
 };
 
 const chatSlice = createSlice({
@@ -40,6 +42,12 @@ const chatSlice = createSlice({
     addMessage(state, action) {
       state.messages.push(action.payload);
     },
+    setSearchQuery(state, action) {
+      state.searchQuery = action.payload ?? "";
+    },
+    setSearchResults(state, action) {
+      state.searchResults = action.payload ?? [];
+    },
   },
 });
 
@@ -53,6 +61,8 @@ export const {
   setMessages,
   prependMessages,
   addMessage,
+  setSearchQuery,
+  setSearchResults,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

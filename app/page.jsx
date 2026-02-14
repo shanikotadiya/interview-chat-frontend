@@ -4,7 +4,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 50;
 
 const getBackendBase = () =>
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
 async function fetchConversationsSSR() {
   const base = getBackendBase().replace(/\/$/, "");

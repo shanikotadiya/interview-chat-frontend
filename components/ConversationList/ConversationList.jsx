@@ -82,6 +82,8 @@ const MemoizedConversationItem = memo(ConversationItem);
 function ConversationListInner({ initialData }) {
   const dispatch = useDispatch();
   const conversations = useSelector((state) => state.chat.conversations);
+  const searchQuery = useSelector((state) => state.chat.searchQuery);
+  const searchResults = useSelector((state) => state.chat.searchResults);
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const hasHydrated = useRef(false);
 
@@ -91,7 +93,8 @@ function ConversationListInner({ initialData }) {
     dispatch(setConversations(Array.isArray(initialData.data) ? initialData.data : []));
   }, [dispatch, initialData]);
 
-  const list = conversations.length > 0 ? conversations : (initialData?.data ?? []);
+  const baseList = conversations.length > 0 ? conversations : (initialData?.data ?? []);
+  const list = searchQuery.trim() !== "" ? searchResults : baseList;
 
   const handleSelect = useCallback(
     (conversation) => {
@@ -105,7 +108,9 @@ function ConversationListInner({ initialData }) {
   return (
     <ul className={styles.list} aria-label="Conversation list">
       {list.length === 0 ? (
-        <li className={styles.empty}>No conversations yet.</li>
+        <li className={styles.empty}>
+          {searchQuery.trim() !== "" ? "No matching conversations." : "No conversations yet."}
+        </li>
       ) : (
         list.map((conv) => (
           <MemoizedConversationItem
