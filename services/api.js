@@ -1,4 +1,6 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "http://localhost:5000");
 
 /**
  * Shared fetch wrapper: builds URL, handles non-OK responses, parses JSON.
@@ -8,7 +10,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
  * @throws {Error} On network failure or non-2xx response (message from server or generic)
  */
 async function request(path, params = {}) {
-  const url = new URL(path, BASE_URL);
+  const base = BASE_URL.replace(/\/$/, "");
+  const pathStr = path.startsWith("/") ? path : `/${path}`;
+  const url = new URL(pathStr, base);
   Object.entries(params).forEach(([key, value]) => {
     if (value != null && value !== "") {
       url.searchParams.set(key, String(value));
@@ -51,7 +55,8 @@ async function request(path, params = {}) {
  * @throws {Error} On network failure or non-2xx response
  */
 async function post(path, body) {
-  const url = new URL(path, BASE_URL);
+  const base = BASE_URL.replace(/\/$/, "");
+  const url = new URL(path.startsWith("/") ? path : `/${path}`, base);
   let response;
   try {
     response = await fetch(url.toString(), {
