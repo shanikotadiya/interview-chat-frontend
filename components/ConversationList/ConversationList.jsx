@@ -2,8 +2,11 @@
 
 import { memo, useEffect, useRef, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setConversations, setSelectedConversation } from "../../store/chatSlice.js";
+import { setConversations, setSelectedConversation, appendConversations } from "../../store/chatSlice.js";
+import { fetchConversations } from "../../services/api.js";
 import styles from "./ConversationList.module.scss";
+
+const CONVERSATIONS_PAGE_SIZE = 50;
 
 function formatTimestamp(updatedAt) {
   if (!updatedAt) return "";
@@ -86,15 +89,59 @@ function ConversationListInner({ initialData }) {
   const searchResults = useSelector((state) => state.chat.searchResults);
   const selectedConversation = useSelector((state) => state.chat.selectedConversation);
   const hasHydrated = useRef(false);
+  const sentinelRef = useRef(null);
+  const loadingRef = useRef(false);
+
+  const [nextPage, setNextPage] = useState(2);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (hasHydrated.current || !initialData?.data) return;
     hasHydrated.current = true;
     dispatch(setConversations(Array.isArray(initialData.data) ? initialData.data : []));
+    const total = initialData.total ?? 0;
+    const count = (initialData.data ?? []).length;
+    setHasMore(count < total);
+    setNextPage(2);
   }, [dispatch, initialData]);
 
   const baseList = conversations.length > 0 ? conversations : (initialData?.data ?? []);
   const list = searchQuery.trim() !== "" ? searchResults : baseList;
+  const isShowingMainList = searchQuery.trim() === "";
+
+  const loadMore = useCallback(() => {
+    if (loadingRef.current || !hasMore || !isShowingMainList) return;
+    loadingRef.current = true;
+    setLoading(true);
+    fetchConversations(nextPage, CONVERSATIONS_PAGE_SIZE)
+      .then((res) => {
+        const data = res.data ?? [];
+        dispatch(appendConversations(data));
+        setHasMore(data.length >= CONVERSATIONS_PAGE_SIZE);
+        setNextPage((p) => p + 1);
+      })
+      .catch(() => setHasMore(false))
+      .finally(() => {
+        loadingRef.current = false;
+        setLoading(false);
+      });
+  }, [hasMore, isShowingMainList, nextPage, dispatch]);
+
+  useEffect(() => {
+    if (!isShowingMainList || !hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting && !loadingRef.current) loadMore();
+      },
+      { root: null, rootMargin: "100px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isShowingMainList, hasMore, loading, loadMore]);
 
   const handleSelect = useCallback(
     (conversation) => {
@@ -106,22 +153,29 @@ function ConversationListInner({ initialData }) {
   const getConversationId = (c) => c.id ?? c.conversationId;
 
   return (
-    <ul className={styles.list} aria-label="Conversation list">
-      {list.length === 0 ? (
-        <li className={styles.empty}>
-          {searchQuery.trim() !== "" ? "No matching conversations." : "No conversations yet."}
-        </li>
-      ) : (
-        list.map((conv) => (
-          <MemoizedConversationItem
-            key={getConversationId(conv) ?? JSON.stringify(conv)}
-            conversation={conv}
-            isSelected={selectedConversation && getConversationId(selectedConversation) === getConversationId(conv)}
-            onSelect={handleSelect}
-          />
-        ))
+    <>
+      <ul className={styles.list} aria-label="Conversation list">
+        {list.length === 0 ? (
+          <li className={styles.empty}>
+            {searchQuery.trim() !== "" ? "No matching conversations." : "No conversations yet."}
+          </li>
+        ) : (
+          list.map((conv) => (
+            <MemoizedConversationItem
+              key={getConversationId(conv) ?? JSON.stringify(conv)}
+              conversation={conv}
+              isSelected={selectedConversation && getConversationId(selectedConversation) === getConversationId(conv)}
+              onSelect={handleSelect}
+            />
+          ))
+        )}
+      </ul>
+      {isShowingMainList && hasMore && (
+        <div ref={sentinelRef} className={styles.sentinel}>
+          {loading && <span className={styles.loadingSpinner} aria-label="Loading more" />}
+        </div>
       )}
-    </ul>
+    </>
   );
 }
 
