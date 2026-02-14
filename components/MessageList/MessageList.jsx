@@ -69,11 +69,12 @@ function MessageItem({ message, isOwn, showSender, isNew }) {
 const MemoizedMessageItem = memo(MessageItem);
 
 // Group consecutive messages by same sender; each group has { isOwn, messages }.
+// Use isOwnMessage from server so alignment stays correct after polling.
 function groupMessages(list) {
   const groups = [];
   for (let i = 0; i < list.length; i++) {
     const msg = list[i];
-    const isOwn = Boolean(msg.isOwn ?? msg.senderId === "me");
+    const isOwn = Boolean(msg.isOwn ?? msg.isOwnMessage ?? msg.senderId === "me");
     if (groups.length === 0 || groups[groups.length - 1].isOwn !== isOwn) {
       groups.push({ isOwn, messages: [msg] });
     } else {

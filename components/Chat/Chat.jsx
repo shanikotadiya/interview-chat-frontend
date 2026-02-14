@@ -64,9 +64,10 @@ export default function Chat() {
     (channelId, text) => {
       if (!channelId || !text?.trim()) return Promise.reject();
       setIsSending(true);
-      return sendMessageApi("slack", channelId, text.trim())
+        return sendMessageApi("slack", channelId, text.trim())
         .then((response) => {
-          dispatch(addMessage({ ...(response.data ?? response), isOwn: true }));
+          const msg = response.data ?? response;
+          dispatch(addMessage({ ...msg, isOwnMessage: true, isOwn: true }));
           setIsSending(false);
         })
         .catch(() => {
