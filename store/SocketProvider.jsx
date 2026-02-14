@@ -9,7 +9,6 @@ function getSocketUrl() {
   const base = process.env.NEXT_PUBLIC_BACKEND_URL || "";
   if (!base) return null;
   if (process.env.NEXT_PUBLIC_USE_SOCKET === "false") return null;
-  if (base.includes("vercel.app")) return null;
   return base.replace(/\/$/, "");
 }
 
